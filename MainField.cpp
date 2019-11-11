@@ -1,8 +1,8 @@
 #include "MainField.h"
 
-MainField::MainField(QGridLayout* uiField, QLineEdit* infoLineEdit, QLabel* infoLabel, QMainWindow* parent) : QObject(0), activeLabelX(-1), activeLabelY(-1),
-	fieldHeight(-1), fieldWidth(-1), dataField(nullptr), labelField(nullptr), uiField_p(uiField),  parent(parent),
-	infoLineEdit_p(infoLineEdit), infoLabel_p(infoLabel), leftCoordinateLabel(nullptr), upperCoordinateLabel(nullptr)
+MainField::MainField(QGridLayout* uiField, QLineEdit* infoLineEdit, QLabel* infoLabel, QMainWindow* parent) : QObject(0),
+	activeLabelX(-1), activeLabelY(-1), fieldHeight(0), fieldWidth(0), uiField_p(uiField),  parent(parent),
+	infoLineEdit_p(infoLineEdit), infoLabel_p(infoLabel)
 {
 
 }
@@ -14,36 +14,49 @@ MainField::~MainField()
 
 void MainField::clear()
 {
-	if (labelField != nullptr)
+	if (!labelField.empty())
 	{
 		for (int i = 0; i < fieldHeight; i++)
 		{
 			for (int j = 0; j < fieldWidth; j++)
 			{
-				disconnect(&labelField[i][j], SIGNAL(mousePressed()), this, SLOT(selectActiveCell()));
+				disconnect(labelField[i][j], SIGNAL(mousePressed()), this, SLOT(selectActiveCell()));
 			}
 		}
 
 		for (int i = 0; i < fieldHeight; i++)
 		{
-			delete[] labelField[i];
+			for (int j = 0; j < fieldWidth; j++)
+			{
+				delete labelField[i][j];
+			}
+			labelField[i].clear();
 		}
-		delete[] labelField;
+		labelField.clear();
 
 		for (int i = 0; i < fieldHeight; i++)
 		{
-			delete[] dataField[i];
+			dataField[i].clear();
 		}
-		delete[] dataField;
+		dataField.clear();
 
-		delete[] upperCoordinateLabel;
-		delete[] leftCoordinateLabel;
+		for (int i = 0; i < fieldWidth; i++)
+		{
+			delete upperCoordinateLabel[i];
+		}
+		upperCoordinateLabel.clear();
+		
+		for (int j = 0; j < fieldHeight; j++)
+		{
+			delete leftCoordinateLabel[j];
+		}
+		leftCoordinateLabel.clear();
 	}
 }
 
 void MainField::resetLabelStyle()
 {
-	if (labelField==nullptr)
+	if (labelField.empty())
 	{
 		return;
 	}
@@ -54,18 +67,18 @@ void MainField::resetLabelStyle()
 	{
 		for (int j = 0; j < fieldWidth; j++)
 		{
-			labelField[i][j].setFont(font);
+			labelField[i][j]->setFont(font);
 		}
 	}
 
 	for (int j = 0; j < fieldWidth; j++)
 	{
-		upperCoordinateLabel[j].setFont(font);
+		upperCoordinateLabel[j]->setFont(font);
 	}
 
 	for (int i = 0; i < fieldHeight; i++)
 	{
-		leftCoordinateLabel[i].setFont(font);
+		leftCoordinateLabel[i]->setFont(font);
 	}
 }
 
@@ -91,56 +104,61 @@ void MainField::createNewField(int height, int width)
 		fieldWidth = width;
 	}
 
-	labelField = new Coordinatedlabel * [fieldHeight];
+	labelField.resize(fieldHeight);
 	for (int i = 0; i < fieldHeight; i++)
 	{
-		labelField[i] = new Coordinatedlabel[fieldWidth];
+		labelField[i].resize(fieldWidth);
 		for (int j = 0; j < fieldWidth; j++)
 		{
-			labelField[i][j].x = i;
-			labelField[i][j].y = j;
+			labelField[i][j] = new Coordinatedlabel;
 
-			labelField[i][j].setText("");
-			labelField[i][j].setStyleSheet(StyleData::getInstance()->getCellDefaultBorderStyle());
-			labelField[i][j].setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-			labelField[i][j].setWordWrap(true);
+			labelField[i][j]->x = i;
+			labelField[i][j]->y = j;
+
+			labelField[i][j]->setText("");
+			labelField[i][j]->setStyleSheet(StyleData::getInstance()->getCellDefaultBorderStyle());
+			labelField[i][j]->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+			labelField[i][j]->setWordWrap(true);
 		}
 	}
 
-	upperCoordinateLabel = new QLabel[fieldWidth];
+	upperCoordinateLabel.resize(fieldWidth);
 	for (int j = 0; j < fieldWidth; j++)
 	{
-		upperCoordinateLabel[j].setText(getStringUpperCoordinate(j + 1));
-		upperCoordinateLabel[j].setStyleSheet(StyleData::getInstance()->getCoordinateCellBorderStyle());
-		upperCoordinateLabel[j].setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-		uiField_p->addWidget(&upperCoordinateLabel[j], 0, j + 1);
+		upperCoordinateLabel[j] = new QLabel;
+		upperCoordinateLabel[j]->setText(getStringUpperCoordinate(j + 1));
+		upperCoordinateLabel[j]->setStyleSheet(StyleData::getInstance()->getCoordinateCellBorderStyle());
+		upperCoordinateLabel[j]->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+		uiField_p->addWidget(upperCoordinateLabel[j], 0, j + 1);
 	}
 
-	leftCoordinateLabel = new QLabel[fieldHeight];
+	leftCoordinateLabel.resize(fieldHeight);
 	for (int i = 0; i < fieldHeight; i++)
 	{
-		leftCoordinateLabel[i].setText(getStringLeftCoordinate(i + 1));
-		leftCoordinateLabel[i].setStyleSheet(StyleData::getInstance()->getCoordinateCellBorderStyle());
-		leftCoordinateLabel[i].setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-		uiField_p->addWidget(&leftCoordinateLabel[i], i + 1, 0);
+		leftCoordinateLabel[i] = new QLabel;
+		leftCoordinateLabel[i]->setText(getStringLeftCoordinate(i + 1));
+		leftCoordinateLabel[i]->setStyleSheet(StyleData::getInstance()->getCoordinateCellBorderStyle());
+		leftCoordinateLabel[i]->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+		uiField_p->addWidget(leftCoordinateLabel[i], i + 1, 0);
 	}
 
 	for (int i = 0; i < fieldHeight; i++)
 	{
 		for (int j = 0; j < fieldWidth; j++)
 		{
-			uiField_p->addWidget(&labelField[i][j], labelField[i][j].x + 1, labelField[i][j].y + 1);
+			uiField_p->addWidget(labelField[i][j], labelField[i][j]->x + 1, labelField[i][j]->y + 1);
 
-			connect(&labelField[i][j], SIGNAL(mousePressed()), this, SLOT(selectActiveCell()));
+			connect(labelField[i][j], SIGNAL(mousePressed()), this, SLOT(selectActiveCell()));
 		}
 	}
 
 	resetLabelStyle();
 
-	dataField = new std::string * [fieldHeight];
+	
+	dataField.resize(fieldHeight);
 	for (int i = 0; i < fieldHeight; i++)
 	{
-		dataField[i] = new std::string[fieldHeight];
+		dataField[i].resize(fieldWidth);
 	}
 
 	infoLabel_p->setText("No active cell:");
@@ -158,14 +176,14 @@ void MainField::selectActiveCell()
 
 	if (activeLabelX != -1)
 	{
-		labelField[activeLabelX][activeLabelY].setStyleSheet(StyleData::getInstance()->getCellDefaultBorderStyle());
+		labelField[activeLabelX][activeLabelY]->setStyleSheet(StyleData::getInstance()->getCellDefaultBorderStyle());
 	}
 
 	// upd selected cell
 	activeLabelX = ((Coordinatedlabel*)sender())->x;
 	activeLabelY = ((Coordinatedlabel*)sender())->y;
 
-	labelField[activeLabelX][activeLabelY].setStyleSheet(StyleData::getInstance()->getCellSelectedBorderStyle());
+	labelField[activeLabelX][activeLabelY]->setStyleSheet(StyleData::getInstance()->getCellSelectedBorderStyle());
 
 	//upd info
 	infoLineEdit_p->setDisabled(false);
@@ -188,11 +206,11 @@ void MainField::refreshCell()
 	// to call parser updateCell() and update label value
 	if (dat != "")
 	{
-		labelField[activeLabelX][activeLabelY].setText("notEmpty");
+		labelField[activeLabelX][activeLabelY]->setText("notEmpty");
 	}
 	else
 	{
-		labelField[activeLabelX][activeLabelY].setText("");
+		labelField[activeLabelX][activeLabelY]->setText("");
 	}
 	// vector<pair<pair<int, int>,string> > updateCell(int x, int y, string newLine)
 }
@@ -232,7 +250,7 @@ QString MainField::getStringLeftCoordinate(int position)
 
 void MainField::saveField()
 {
-	if (labelField == nullptr)
+	if (labelField.empty())
 	{
 		QMessageBox::warning(parent, "Error", "No ative board!");
 
@@ -364,8 +382,96 @@ void MainField::openField()
 		{
 			if (dataField[i][j] != "")
 			{
-				labelField[i][j].setText("notEmpty");
+				labelField[i][j]->setText("notEmpty");
 			}
 		}
 	}
+}
+
+void MainField::deleteRow()
+{
+	if (labelField.empty())
+	{
+		QMessageBox::warning(parent, "Error", "No ative board!");
+
+		return;
+	}
+
+	if (fieldHeight==1)
+	{
+		QMessageBox::warning(parent, "Error", "You cannot delete last row!");
+
+		return;
+	}
+
+	for (int j = 0; j < fieldWidth; j++)
+	{
+		disconnect(labelField[fieldHeight - 1][j], SIGNAL(mousePressed()), this, SLOT(selectActiveCell()));
+		delete labelField[fieldHeight - 1][j];
+	}
+	labelField[fieldHeight - 1].clear();
+
+	delete leftCoordinateLabel.back();
+	leftCoordinateLabel.pop_back();
+
+	dataField[fieldHeight - 1].clear();
+
+	if (activeLabelX == fieldHeight - 1)
+	{
+		activeLabelX = activeLabelY = -1;
+
+		infoLabel_p->setText("No active cell:");
+		infoLineEdit_p->setText("");
+		infoLineEdit_p->setEnabled(false);
+	}
+
+	fieldHeight--;
+
+	// call delete row in parser
+
+	resetLabelStyle();
+}
+
+void MainField::deleteColumn()
+{
+	if (labelField.empty())
+	{
+		QMessageBox::warning(parent, "Error", "No ative board!");
+
+		return;
+	}
+
+	if (fieldWidth == 1)
+	{
+		QMessageBox::warning(parent, "Error", "You cannot delete last column!");
+
+		return;
+	}
+
+	for (int i = 0; i < fieldHeight; i++)
+	{
+		disconnect(labelField[i][fieldWidth - 1], SIGNAL(mousePressed()), this, SLOT(selectActiveCell()));
+		delete labelField[i][fieldWidth - 1];
+		labelField[i].pop_back();
+
+		dataField[i].pop_back();
+	}
+
+	delete upperCoordinateLabel.back();
+	upperCoordinateLabel.pop_back();
+
+	if (activeLabelY == fieldWidth - 1)
+	{
+		activeLabelX = activeLabelY = -1;
+
+		infoLabel_p->setText("No active cell:");
+		infoLineEdit_p->setText("");
+		infoLineEdit_p->setEnabled(false);
+	}
+
+	fieldWidth--;
+
+	// call delete column in parser
+
+	resetLabelStyle();
 }

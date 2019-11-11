@@ -72,6 +72,9 @@
     <addaction name="actionOpen"/>
     <addaction name="actionSave_as"/>
     <addaction name="separator"/>
+    <addaction name="actionDelete_row"/>
+    <addaction name="actionDelete_column"/>
+    <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
@@ -127,6 +130,16 @@
   <action name="actionExit">
    <property name="text">
     <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionDelete_row">
+   <property name="text">
+    <string>Delete row</string>
+   </property>
+  </action>
+  <action name="actionDelete_column">
+   <property name="text">
+    <string>Delete column</string>
    </property>
   </action>
  </widget>

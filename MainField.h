@@ -42,9 +42,9 @@ public:
 	~MainField();
 
 	int fieldWidth, fieldHeight;
-	std::string** dataField;
-	Coordinatedlabel** labelField;
-	QLabel* upperCoordinateLabel, * leftCoordinateLabel;
+	std::vector<std::vector<std::string> > dataField;
+	std::vector<std::vector<Coordinatedlabel*> > labelField;
+	std::vector<QLabel*> upperCoordinateLabel, leftCoordinateLabel;
 
 	void resetLabelStyle();
 
@@ -60,4 +60,6 @@ public slots:
 	void refreshCell();
 	void saveField();
 	void openField();
+	void deleteRow();
+	void deleteColumn();
 };

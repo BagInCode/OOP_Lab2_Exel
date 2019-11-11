@@ -26,9 +26,11 @@ MSExcel::MSExcel(QWidget *parent): QMainWindow(parent)
 
 	//connect menuBar
 	connect(ui.actionNew, SIGNAL(triggered()), field, SLOT(createNewField()));
-	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(closeApplication()));
 	connect(ui.actionSave_as, SIGNAL(triggered()), field, SLOT(saveField()));
 	connect(ui.actionOpen, SIGNAL(triggered()), field, SLOT(openField()));
+	connect(ui.actionDelete_row, SIGNAL(triggered()), field, SLOT(deleteRow()));
+	connect(ui.actionDelete_column, SIGNAL(triggered()), field, SLOT(deleteColumn()));
+	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(closeApplication()));
 		
 	connect(ui.actionSettings, SIGNAL(triggered()), this, SLOT(changeSettings()));
 	
