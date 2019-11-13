@@ -39,14 +39,11 @@ vector < vector < string > > Table::create(vector < vector < string > > loadedTa
 		for (int j = 0; j < countColumn; j++)
 		{
 			thisTable[i][j].create(&thisTable, { i, j });
-			thisTable[i][j].setFormula(loadedTable[i][j]);
-
-			if (checkCycles({ i, j }))
+			
+			if (loadedTable[i][j].size())
 			{
-				thisTable[i][j].setError("Cicled in this point");
+				update(loadedTable[i][j], { i,j });
 			}
-
-			thisTable[i][j].update();
 		}
 	}
 
