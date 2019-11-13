@@ -13,7 +13,7 @@ void Formula::setFormula(string newFormula)
 	
 	for (size_t i = 0; i < referenceTo.size(); i++)
 	{
-		if (referenceTo[i].first > myTable->size() || referenceTo[i].second > myTable->at(0).size())
+		if (referenceTo[i].first >= myTable->size() || referenceTo[i].second >= myTable->at(0).size())
 		{
 			continue;
 		}
@@ -38,7 +38,7 @@ void Formula::setFormula(string newFormula)
 
 	for (size_t i = 0; i < referenceTo.size(); i++)
 	{
-		if (referenceTo[i].first > myTable->size() || referenceTo[i].second > myTable->at(0).size())
+		if (referenceTo[i].first >= myTable->size() || referenceTo[i].second >= myTable->at(0).size())
 		{
 			continue;
 		}
@@ -236,7 +236,7 @@ void Formula::prepareToDelete()
 {
 	for (size_t i = 0; i < referenceTo.size(); i++)
 	{
-		if (referenceTo[i].first > myTable->size() || referenceTo[i].second > myTable->at(0).size())
+		if (referenceTo[i].first >= myTable->size() || referenceTo[i].second >= myTable->at(0).size())
 		{
 			continue;
 		}
