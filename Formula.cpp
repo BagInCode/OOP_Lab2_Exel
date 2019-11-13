@@ -13,6 +13,11 @@ void Formula::setFormula(string newFormula)
 	
 	for (size_t i = 0; i < referenceTo.size(); i++)
 	{
+		if (referenceTo[i].first > myTable->size() || referenceTo[i].second > myTable->at(0).size())
+		{
+			continue;
+		}
+
 		myTable->at(referenceTo[i].first).at(referenceTo[i].second).deleteReferenceFrom(myPosition);
 	}
 
@@ -33,6 +38,11 @@ void Formula::setFormula(string newFormula)
 
 	for (size_t i = 0; i < referenceTo.size(); i++)
 	{
+		if (referenceTo[i].first > myTable->size() || referenceTo[i].second > myTable->at(0).size())
+		{
+			continue;
+		}
+
 		myTable->at(referenceTo[i].first).at(referenceTo[i].second).addReferenceFrom(myPosition);
 	}
 
@@ -48,6 +58,7 @@ void Formula::calculate()
 
 	if (backPolishNotation.size() == 0)
 	{
+		value = 0;
 		return;
 	}
 
@@ -225,6 +236,11 @@ void Formula::prepareToDelete()
 {
 	for (size_t i = 0; i < referenceTo.size(); i++)
 	{
+		if (referenceTo[i].first > myTable->size() || referenceTo[i].second > myTable->at(0).size())
+		{
+			continue;
+		}
+
 		myTable->at(referenceTo[i].first).at(referenceTo[i].second).deleteReferenceFrom(myPosition);
 	}
 
