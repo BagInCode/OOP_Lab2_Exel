@@ -10,7 +10,7 @@ void Formula::setFormula(string newFormula)
 {
 	isError = 0;
 	errorText = "";
-	
+
 	for (size_t i = 0; i < referenceTo.size(); i++)
 	{
 		if (referenceTo[i].first >= myTable->size() || referenceTo[i].second >= myTable->at(0).size())
@@ -80,68 +80,70 @@ void Formula::calculate()
 
 			switch (backPolishNotation[i].getOperation())
 			{
-				case '+':
-				{
-					stack.push_back(x + y);
-				}; break;				
-				case '-':
-				{
-					stack.push_back(x - y);
-				}; break;				
-				case '*':
-				{
-					stack.push_back(x * y);
-				}; break;				
-				case '/':
-				{
-					if (y == 0)
-					{
-						setError("Dividing by 0");
-					
-						return;
-					}
-
-					stack.push_back(x / y);
-				}; break;				
-				case '^':
-				{
-					stack.push_back(min(x, y));
-				}; break;				
-				case 'v':
-				{
-					stack.push_back(max(x, y));
-				}; break;				
-			}
-		}else
-		if (backPolishNotation[i].testNumber())
-		{
-			stack.push_back(backPolishNotation[i].getNumber());
-		}else
-		{
-			pair < int, int > position = backPolishNotation[i].getSquare();
-
-			if (position.first >= myTable->size() || position.second >= myTable->at(0).size())
+			case '+':
 			{
-				setError("Incorrecr argument: position of cell is out of Table range");
-
-				return;
-			}
-
-			if (myTable->at(position.first).at(position.second).testError())
+				stack.push_back(x + y);
+			}; break;
+			case '-':
 			{
-				setError("Incorrecr argument: error in cell which this depend by");
-				
-				return;
-			}
+				stack.push_back(x - y);
+			}; break;
+			case '*':
+			{
+				stack.push_back(x * y);
+			}; break;
+			case '/':
+			{
+				if (y == 0)
+				{
+					setError("Dividing by 0");
 
-			stack.push_back(myTable->at(position.first).at(position.second).getValue());
+					return;
+				}
+
+				stack.push_back(x / y);
+			}; break;
+			case '^':
+			{
+				stack.push_back(min(x, y));
+			}; break;
+			case 'v':
+			{
+				stack.push_back(max(x, y));
+			}; break;
+			}
 		}
+		else
+			if (backPolishNotation[i].testNumber())
+			{
+				stack.push_back(backPolishNotation[i].getNumber());
+			}
+			else
+			{
+				pair < int, int > position = backPolishNotation[i].getSquare();
+
+				if (position.first >= myTable->size() || position.second >= myTable->at(0).size())
+				{
+					setError("Incorrecr argument: position of cell is out of Table range");
+
+					return;
+				}
+
+				if (myTable->at(position.first).at(position.second).testError())
+				{
+					setError("Incorrecr argument: error in cell which this depend by");
+
+					return;
+				}
+
+				stack.push_back(myTable->at(position.first).at(position.second).getValue());
+			}
 	}
 
 	if (stack.size() != 1)
 	{
 		setError("Incorrect formula view");
-	
+
 		return;
 	}
 
@@ -202,7 +204,8 @@ string Formula::getValueString()
 		if (backPolishNotation.size() == 0)
 		{
 			return "";
-		}else
+		}
+		else
 		{
 			return "0";
 		}

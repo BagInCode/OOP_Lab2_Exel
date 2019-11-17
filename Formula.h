@@ -37,7 +37,7 @@ class Formula
 	vector < pair < int, int > > referenceTo;
 
 	vector < vector < Formula > >* myTable = nullptr;
-	
+
 public:
 	void create(vector < vector < Formula > >* _myTable, pair < int, int > _myPosition);
 	void setFormula(string newFormula);
@@ -58,4 +58,3 @@ public:
 
 	void nullCicleError();
 };
-

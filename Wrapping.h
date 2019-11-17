@@ -40,4 +40,3 @@ public:
 	void create(pair < int, int > _square);
 
 };
-

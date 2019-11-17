@@ -11,7 +11,7 @@ void Table::create(int _countRow, int _countColumn)
 	for (int i = 0; i < countRow; i++)
 	{
 		thisTable[i].resize(countColumn);
-	
+
 		for (int j = 0; j < countColumn; j++)
 		{
 			thisTable[i][j].create(&thisTable, { i, j });
@@ -39,7 +39,7 @@ vector < vector < string > > Table::create(vector < vector < string > > loadedTa
 		for (int j = 0; j < countColumn; j++)
 		{
 			thisTable[i][j].create(&thisTable, { i, j });
-			
+
 			if (loadedTable[i][j].size())
 			{
 				update(loadedTable[i][j], { i,j });
@@ -111,9 +111,9 @@ bool Table::checkCycles(pair < int, int > position)
 bool Table::dfs(pair < int, int > currentPosition, pair < int, int > startPosition, map < pair < int, int >, bool >& used, bool debug)
 {
 	used[currentPosition] = 1;
-	
+
 	vector < pair < int, int > >* edges = thisTable[currentPosition.first][currentPosition.second].getReferenceFrom();
-	
+
 	if (edges->size() == 0)
 	{
 		return 0;
@@ -138,11 +138,12 @@ bool Table::dfs(pair < int, int > currentPosition, pair < int, int > startPositi
 	return 0;
 }
 
-void Table::addRow()
+vector < vector < string > > Table::addRow()
 {
 	countRow++;
-	
+
 	vector < Formula > emptyVector;
+	emptyVector.resize(countColumn);
 
 	thisTable.push_back(emptyVector);
 
@@ -151,10 +152,30 @@ void Table::addRow()
 		thisTable[countRow - 1][i].create(&thisTable, { countRow - 1, i });
 	}
 
-	return;
+	for (int i = 0; i < countRow; i++)
+	{
+		for (int j = 0; j < countColumn; j++)
+		{
+			thisTable[i][j].update();
+		}
+	}
+
+	vector < vector < string > > result;
+	result.resize(countRow);
+
+	for (int i = 0; i < countRow; i++)
+	{
+		result[i].resize(countColumn);
+		for (int j = 0; j < countColumn; j++)
+		{
+			result[i][j] = thisTable[i][j].getValueString();
+		}
+	}
+
+	return result;
 }
 
-void Table::addColumn()
+vector < vector < string > > Table::addColumn()
 {
 	countColumn++;
 
@@ -167,7 +188,27 @@ void Table::addColumn()
 		thisTable[i].back().create(&thisTable, { i, countColumn - 1 });
 	}
 
-	return;
+	for (int i = 0; i < countRow; i++)
+	{
+		for (int j = 0; j < countColumn; j++)
+		{
+			thisTable[i][j].update();
+		}
+	}
+
+	vector < vector < string > > result;
+	result.resize(countRow);
+
+	for (int i = 0; i < countRow; i++)
+	{
+		result[i].resize(countColumn);
+		for (int j = 0; j < countColumn; j++)
+		{
+			result[i][j] = thisTable[i][j].getValueString();
+		}
+	}
+
+	return result;
 }
 
 
@@ -180,6 +221,14 @@ vector < vector < string > > Table::deleteRow()
 
 	countRow--;
 	thisTable.pop_back();
+
+	for (int i = 0; i < countRow; i++)
+	{
+		for (int j = 0; j < countColumn; j++)
+		{
+			thisTable[i][j].update();
+		}
+	}
 
 	vector < vector < string > > result;
 	result.resize(countRow);
@@ -231,4 +280,11 @@ vector < vector < string > > Table::deleteColumn()
 	}
 
 	return result;
+}
+
+void Table::clear()
+{
+	thisTable.clear();
+
+	countRow = countColumn = 0;
 }

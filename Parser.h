@@ -34,7 +34,6 @@ class Parser
 	void splitString(string formula, vector < Wrapping >& splitedString, bool& anyError, set < pair < int, int > >& referenceTo);
 	void createBackPolishNotation(vector < Wrapping >& splitedString, vector < Wrapping >& backPolishNotation, bool& anyError);
 public:
-	vector < Wrapping > parse(string formula, bool & anyError, vector < pair < int, int > > &referenceTo);
+	vector < Wrapping > parse(string formula, bool& anyError, vector < pair < int, int > >& referenceTo);
 
 };
-
