@@ -111,7 +111,7 @@ void Parser::createBackPolishNotation(vector < Wrapping >& splitedString, vector
 			{
 				priory = 1;
 			}
-			if (splitedString[i].getOperation() == '*' || splitedString[i].getOperation() == '/')
+			if (splitedString[i].getOperation() == '*' || splitedString[i].getOperation() == '/' || splitedString[i].getOperation() == '%')
 			{
 				priory = 2;
 			}
