@@ -10,7 +10,7 @@ void Parser::splitString(string formula, vector < Wrapping >& splitedString, boo
 		{
 			continue;
 		}
-
+			
 		temp = temp + formula[i];
 	}
 
@@ -35,112 +35,24 @@ void Parser::splitString(string formula, vector < Wrapping >& splitedString, boo
 
 				continue;
 			}
+			if (formula[i] == '+' && formula[i - 1] == '(')
+			{
+				continue;
+			}
 
 			if (formulaPart.size())
 			{
-				if (testNumber(formulaPart))
+				vector < Wrapping > arguments = getArguments(formula, formulaPart, anyError, i, referenceTo);
+
+				if (anyError)
 				{
-					Wrapping number;
-
-					number.create(convertNumber(formulaPart));
-
-					splitedString.push_back(number);
+					return;
 				}
-				else
-					if (testSquare(formulaPart))
-					{
-						Wrapping square;
 
-						square.create(convertSquare(formulaPart));
-
-						referenceTo.insert(convertSquare(formulaPart));
-
-						splitedString.push_back(square);
-					}
-					else
-						if (testFunction(formulaPart))
-						{
-							if (formula[i] != '(')
-							{
-								anyError = 1;
-
-								return;
-							}
-
-							string functionPart = "";
-							int balance = 0;
-
-							for (i = i + 1; i < formula.size(); i++)
-							{
-								if (formula[i] == '(') balance++;
-								if (formula[i] == ')') balance--;
-
-								if ((formula[i] == ',' && balance == 0) || (formula[i] == ')' && balance < 0))
-								{
-									bool error = 0;
-
-									vector < Wrapping > functionArgumentResult;
-
-									splitString(functionPart, functionArgumentResult, error, referenceTo);
-
-									if (error)
-									{
-										anyError = 1;
-										return;
-									}
-
-									Wrapping open; open.create('(');
-									Wrapping close; close.create(')');
-									Wrapping operation;
-
-									if (formulaPart == "min")
-									{
-										operation.create('^');
-									}
-									else
-									{
-										operation.create('v');
-									}
-
-									splitedString.push_back(open);
-
-									for (size_t j = 0; j < functionArgumentResult.size(); j++)
-									{
-										splitedString.push_back(functionArgumentResult[j]);
-									}
-
-									splitedString.push_back(close);
-
-									if (balance == 0)
-									{
-										splitedString.push_back(operation);
-										functionPart = "";
-									}
-									else
-									{
-										break;
-									}
-								}
-								else
-								{
-									functionPart = functionPart + formula[i];
-								}
-							}
-
-							if (balance != -1)
-							{
-								anyError = 1;
-								return;
-							}
-
-							splitedString.pop_back();
-						}
-						else
-						{
-							anyError = 1;
-
-							return;
-						}
+				for (size_t j = 0; j < arguments.size(); j++)
+				{
+					splitedString.push_back(arguments[j]);
+				}
 
 				formulaPart = "";
 			}
@@ -161,7 +73,7 @@ void Parser::splitString(string formula, vector < Wrapping >& splitedString, boo
 	return;
 }
 
-void Parser::createBackPolishNotation(vector < Wrapping >& splitedString, vector < Wrapping >& backPolishNotation, bool& anyError)
+void Parser::createBackPolishNotation(vector < Wrapping >& splitedString, vector < Wrapping >& backPolishNotation, bool & anyError)
 {
 	vector < pair < int, Wrapping > > stack;
 
@@ -174,26 +86,24 @@ void Parser::createBackPolishNotation(vector < Wrapping >& splitedString, vector
 				stack.push_back({ 0, splitedString[i] });
 
 				continue;
-			}
-			else
-				if (splitedString[i].getOperation() == ')')
+			}else
+			if (splitedString[i].getOperation() == ')')
+			{
+				for (; stack.size() && stack.back().second.getOperation() != '('; stack.pop_back())
 				{
-					for (; stack.size() && stack.back().second.getOperation() != '('; stack.pop_back())
-					{
-						backPolishNotation.push_back(stack.back().second);
-					}
-
-					if (stack.size() && stack.back().second.getOperation() == '(')
-					{
-						stack.pop_back();
-					}
-					else
-					{
-						anyError = 1;
-					}
-
-					continue;
+					backPolishNotation.push_back(stack.back().second);
 				}
+
+				if (stack.size() && stack.back().second.getOperation() == '(')
+				{
+					stack.pop_back();
+				}else
+				{
+					anyError = 1;
+				}
+
+				continue;
+			}
 
 			int priory = 0;
 
@@ -205,9 +115,13 @@ void Parser::createBackPolishNotation(vector < Wrapping >& splitedString, vector
 			{
 				priory = 2;
 			}
-			if (splitedString[i].getOperation() == '^' || splitedString[i].getOperation() == 'v')
+			if (splitedString[i].getOperation == '^')
 			{
 				priory = 3;
+			}
+			if (splitedString[i].getOperation() == '&' || splitedString[i].getOperation() == '|')
+			{
+				priory = 4;
 			}
 
 			if (stack.size() && stack.back().first >= priory)
@@ -232,7 +146,7 @@ void Parser::createBackPolishNotation(vector < Wrapping >& splitedString, vector
 	return;
 }
 
-vector < Wrapping > Parser::parse(string formula, bool& anyError, vector < pair < int, int > >& referenceTo)
+vector < Wrapping > Parser::parse(string formula, bool& anyError, vector < pair < int, int > > & referenceTo)
 {
 	vector < Wrapping > result;
 	vector < Wrapping > splitedString;
@@ -274,7 +188,10 @@ bool Parser::testNumber(string testIt)
 
 bool Parser::testOperation(char testIt)
 {
-	return(testIt == '+' || testIt == '-' || testIt == '*' || testIt == '/' || testIt == '(' || testIt == ')');
+	return(testIt == '+' || testIt == '-' 
+		|| testIt == '*' || testIt == '/' || testIt == '%'
+		|| testIt == '(' || testIt == ')' 
+		|| testIt == '^');
 }
 
 bool Parser::testSquare(string testIt)
@@ -291,22 +208,20 @@ bool Parser::testSquare(string testIt)
 			{
 				result = 0;
 				break;
-			}
-			else
+			}else
 			{
 				letters = 1;
 			}
+		}else
+		if (testIt[i] >= '0' && testIt[i] <= '9')
+		{
+			numbers = 1;
 		}
 		else
-			if (testIt[i] >= '0' && testIt[i] <= '9')
-			{
-				numbers = 1;
-			}
-			else
-			{
-				result = 0;
-				break;
-			}
+		{
+			result = 0;
+			break;
+		}
 	}
 
 	result = (result && numbers && letters);
@@ -316,7 +231,7 @@ bool Parser::testSquare(string testIt)
 
 bool Parser::testFunction(string testIt)
 {
-	return (testIt == "min" || testIt == "max");
+	return (testIt == "min" || testIt == "max" || testIt == "inc" || testIt == "dec");
 }
 
 long long Parser::convertNumber(string number)
@@ -362,14 +277,209 @@ pair < int, int > Parser::convertSquare(string square)
 		result.first = 51;
 	}
 	else
-		if (letters.size() == 1)
+	if(letters.size() == 1)
+	{
+		result.first = letters[0] - 'A';
+	}
+	else
+	{
+		result.first = (letters[0] - 'A' + 1)* ('Z' - 'A' + 1) + letters[1] - 'A';
+	}
+
+	return result;
+}
+
+vector < Wrapping > Parser::getArguments(string& formula, string formulaPart, bool& anyError, size_t& i, set < pair < int, int > > & referenceTo)
+{
+	vector < Wrapping > result;
+
+	if (testNumber(formulaPart))
+	{
+		result.push_back(workWithNumber(formulaPart));
+	}else
+	if(testSquare(formulaPart))
+	{
+		result.push_back(workWithSquare(formulaPart));
+	}else
+	if (testFunction(formulaPart))
+	{
+		result = workWtihFunction(formula, formulaPart, anyError, i, referenceTo);
+	}else
+	{
+		anyError = 1;
+	}
+
+	return result;
+}
+
+Wrapping Parser::workWithNumber(string number)
+{
+	Wrapping result;
+
+	result.create(convertNumber(number));
+
+	return result;
+}
+
+Wrapping Parser::workWithSquare(string square)
+{
+	Wrapping result;
+
+	result.create(convertSquare(square));
+
+	return result;
+}
+
+vector < Wrapping > Parser::workWtihFunction(string& formula, string functionName, bool& anyError, size_t& i, set < pair < int, int > > & referenceTo)
+{
+	vector < Wrapping > result;
+	int countArguments = 0;
+
+	string functionPart = "";
+	int balance = 0;
+
+	vector < Wrapping > functionActions = getFunctionActions(functionName);
+
+	for (i = i + 1; i < formula.size(); i++)
+	{
+		if (formula[i] == '(') balance++;
+		if (formula[i] == ')') balance--;
+
+		if ((formula[i] == ',' && balance == 0) || (formula[i] == ')' && balance < 0))
 		{
-			result.first = letters[0] - 'A';
+			if (functionPart.size() == 0)
+			{
+				anyError = 1;
+
+				return result;
+			}else
+			{
+				countArguments++;
+			}
+
+			vector < Wrapping > arguments;
+
+			splitString(functionPart, arguments, anyError, referenceTo);
+
+			if (anyError)
+			{
+				return result;
+			}
+
+			addArgumentsToVector(arguments, result, functionName, balance);
+
+			functionPart = "";
 		}
 		else
 		{
-			result.first = (letters[0] - 'A' + 1) * ('Z' - 'A' + 1) + letters[1] - 'A';
+			functionPart = functionPart + formula[i];
 		}
+	}
+
+	if (!enoughArguments(functionName, countArguments))
+	{
+		anyError = 1;
+	}
+
+	result.pop_back();
 
 	return result;
+}
+
+vector < Wrapping > Parser::getFunctionActions(string functionName)
+{
+	vector < Wrapping > result;
+
+	if (functionName == "min")
+	{
+		Wrapping action; action.create('&');
+		
+		result.push_back(action);
+	}else
+	if (functionName == "max")
+	{
+		Wrapping action; action.create('|');
+
+		result.push_back(action);
+	}else
+	if (functionName == "inc")
+	{
+		Wrapping add; add.create('+');
+		Wrapping one; one.create(1ll);
+
+		result.push_back(add);
+		result.push_back(one);
+	}else
+	if (functionName == "dec")
+	{
+		Wrapping minus; minus.create('-');
+		Wrapping one; one.create(1ll);
+
+		result.push_back(minus);
+		result.push_back(one);
+	}
+
+	return result;
+}
+
+bool Parser::enoughArguments(string functionName, int countArguments)
+{
+	if (functionName == "min")
+	{
+		return (countArguments != 0);
+	}
+	else
+	if (functionName == "max")
+	{
+		return (countArguments != 0);
+	}
+	else
+	if (functionName == "inc")
+	{
+		return (countArguments == 1);
+	}
+	else
+	if (functionName == "dec")
+	{
+		return (countArguments == 1);
+	}
+}
+
+void Parser::addArgumentsToVector(vector < Wrapping >& arguments, vector < Wrapping >& addTo, string functionName, int balance)
+{
+	Wrapping open; open.create('(');
+	Wrapping close; close.create(')');
+
+	vector < Wrapping > functionActions = getFunctionActions(functionName);
+
+	addTo.push_back(open);
+
+	for (size_t i = 0; i < arguments.size(); i++)
+	{
+		addTo.push_back(arguments[i]);
+	}
+
+	if (functionName == "inc" || functionName == "dec")
+	{
+		for (size_t i = 0; i < functionActions.size(); i++)
+		{
+			addTo.push_back(functionActions[i]);
+		}
+
+		addTo.push_back(close);
+	}
+	else
+	{
+		addTo.push_back(close);
+
+		if (balance != -1)
+		{
+			for (size_t i = 0; i < functionActions.size(); i++)
+			{
+				addTo.push_back(functionActions[i]);
+			}
+		}
+	}
+
+	return;
 }

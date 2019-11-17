@@ -25,11 +25,11 @@ class Table
 {
 	vector < vector < Formula > > thisTable;
 
-	int countColumn = 0;
-	int countRow = 0;
+	int countColumn;
+	int countRow;
 
 	bool checkCycles(pair < int, int > position);
-	bool dfs(pair < int, int > currentPosition, pair < int, int > startPosition, map < pair < int, int >, bool >& used, bool debug = 0);
+	bool dfs(pair < int, int > currentPosition, pair < int, int > startPosition, map < pair < int, int >, bool >& used);
 
 public:
 	void create(int _countRow, int _countColumn);
@@ -40,8 +40,9 @@ public:
 	vector < vector < string > > addRow();
 	vector < vector < string > > addColumn();
 
-	void clear();
-
 	vector < vector < string > > deleteRow();
 	vector < vector < string > > deleteColumn();
+
+	void clear();
 };
+

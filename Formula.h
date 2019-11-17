@@ -38,11 +38,13 @@ class Formula
 
 	vector < vector < Formula > >* myTable = nullptr;
 
+	long long binPow(int step, int val);
+	
 public:
 	void create(vector < vector < Formula > >* _myTable, pair < int, int > _myPosition);
 	void setFormula(string newFormula);
 	void calculate();
-	void setError(string _errorText);
+	void setError(int errorType);
 	void update();
 
 	long long getValue();
@@ -58,3 +60,4 @@ public:
 
 	void nullCicleError();
 };
+

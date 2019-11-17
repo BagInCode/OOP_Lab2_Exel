@@ -10,7 +10,7 @@ void Formula::setFormula(string newFormula)
 {
 	isError = 0;
 	errorText = "";
-
+	
 	for (size_t i = 0; i < referenceTo.size(); i++)
 	{
 		if (referenceTo[i].first >= myTable->size() || referenceTo[i].second >= myTable->at(0).size())
@@ -70,7 +70,7 @@ void Formula::calculate()
 		{
 			if (stack.size() < 2)
 			{
-				setError("Incorrect formula view");
+				setError(1);
 
 				return;
 			}
@@ -80,70 +80,90 @@ void Formula::calculate()
 
 			switch (backPolishNotation[i].getOperation())
 			{
-			case '+':
-			{
-				stack.push_back(x + y);
-			}; break;
-			case '-':
-			{
-				stack.push_back(x - y);
-			}; break;
-			case '*':
-			{
-				stack.push_back(x * y);
-			}; break;
-			case '/':
-			{
-				if (y == 0)
+				case '+':
 				{
-					setError("Dividing by 0");
+					stack.push_back(x + y);
+				}; break;				
+				case '-':
+				{
+					stack.push_back(x - y);
+				}; break;				
+				case '*':
+				{
+					stack.push_back(x * y);
+				}; break;				
+				case '/':
+				{
+					if (y == 0)
+					{
+						setError(4);
+					
+						return;
+					}
 
-					return;
-				}
+					stack.push_back(x / y);
+				}; break;			
+				case '%':
+				{
+					if (y == 0)
+					{
+						setError(4);
+					
+						return;
+					}
 
-				stack.push_back(x / y);
-			}; break;
-			case '^':
-			{
-				stack.push_back(min(x, y));
-			}; break;
-			case 'v':
-			{
-				stack.push_back(max(x, y));
-			}; break;
+					stack.push_back(x % y);
+				}; break;				
+				case '&':
+				{
+					stack.push_back(min(x, y));
+				}; break;				
+				case '|':
+				{
+					stack.push_back(max(x, y));
+				}; break;	
+				case '^':
+				{
+					long long z = binPow(abs(y), x);
+
+					if (y < 0)
+					{
+						z = 1 / z;
+					}
+
+					stack.push_back(z);
+				}break;
 			}
+		}else
+		if (backPolishNotation[i].testNumber())
+		{
+			stack.push_back(backPolishNotation[i].getNumber());
+		}else
+		{
+			pair < int, int > position = backPolishNotation[i].getSquare();
+
+			if (position.first >= myTable->size() || position.second >= myTable->at(0).size())
+			{
+				setError(3);
+
+				return;
+			}
+
+			if (myTable->at(position.first).at(position.second).testError())
+			{
+				setError(2);
+				
+				return;
+			}
+
+			stack.push_back(myTable->at(position.first).at(position.second).getValue());
 		}
-		else
-			if (backPolishNotation[i].testNumber())
-			{
-				stack.push_back(backPolishNotation[i].getNumber());
-			}
-			else
-			{
-				pair < int, int > position = backPolishNotation[i].getSquare();
-
-				if (position.first >= myTable->size() || position.second >= myTable->at(0).size())
-				{
-					setError("Incorrecr argument: position of cell is out of Table range");
-
-					return;
-				}
-
-				if (myTable->at(position.first).at(position.second).testError())
-				{
-					setError("Incorrecr argument: error in cell which this depend by");
-
-					return;
-				}
-
-				stack.push_back(myTable->at(position.first).at(position.second).getValue());
-			}
 	}
 
 	if (stack.size() != 1)
 	{
-		setError("Incorrect formula view");
-
+		setError(1);
+	
 		return;
 	}
 
@@ -152,19 +172,30 @@ void Formula::calculate()
 	return;
 }
 
-void Formula::setError(string _errorText)
+void Formula::setError(int errorType)
 {
+	const string Errors[5] =
+	{
+		"This cell is inside cycle",
+		"There is incorrect formula view",
+		"There is incorrect argument: error in cell, which this depend on",
+		"There is incorrect argument: position of cell is out of table range",
+		"There is dividing by zero",
+	};
+
 	isError = 1;
-	errorText = _errorText;
+	errorText = Errors[errorType];
+
+	return;
 }
 
 void Formula::update()
 {
-	if (isError && errorText == "Cicle here")
+	if (isError && errorText == "This cell is inside cycle")
 	{
 		return;
 	}
-	if (isError && errorText == "Incorrect formula view")
+	if (isError && errorText == "There is incorrect formula view")
 	{
 		return;
 	}
@@ -178,8 +209,8 @@ void Formula::update()
 	{
 		string checkErrors = myTable->at(referenceFrom[i].first).at(referenceFrom[i].second).getValueString();
 
-		if (checkErrors == "Incorrect formula view") continue;
-		if (checkErrors == "Cicle here") continue;
+		if (checkErrors == "There is incorrect formula view") continue;
+		if (checkErrors == "This cell is inside cycle") continue;
 
 		myTable->at(referenceFrom[i].first).at(referenceFrom[i].second).update();
 	}
@@ -204,8 +235,7 @@ string Formula::getValueString()
 		if (backPolishNotation.size() == 0)
 		{
 			return "";
-		}
-		else
+		}else
 		{
 			return "0";
 		}
@@ -279,9 +309,28 @@ bool Formula::testError()
 
 void Formula::nullCicleError()
 {
-	if (errorText == "Cicle here")
+	if (errorText == "This cell is inside cycle")
 	{
 		isError = 0;
 		errorText = "";
+	}
+}
+
+long long Formula::binPow(int step, int val)
+{
+	if (step == 0)
+	{
+		return 1;
+	}
+
+	if (step & 1)
+	{
+		return binPow(step - 1, val)* val;
+	}
+	else
+	{
+		long long temp = binPow(step / 2, val);
+		
+		return temp * temp;
 	}
 }

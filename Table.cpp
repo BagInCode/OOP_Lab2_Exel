@@ -11,7 +11,7 @@ void Table::create(int _countRow, int _countColumn)
 	for (int i = 0; i < countRow; i++)
 	{
 		thisTable[i].resize(countColumn);
-
+	
 		for (int j = 0; j < countColumn; j++)
 		{
 			thisTable[i][j].create(&thisTable, { i, j });
@@ -39,11 +39,9 @@ vector < vector < string > > Table::create(vector < vector < string > > loadedTa
 		for (int j = 0; j < countColumn; j++)
 		{
 			thisTable[i][j].create(&thisTable, { i, j });
-
-			if (loadedTable[i][j].size())
-			{
-				update(loadedTable[i][j], { i,j });
-			}
+			
+			update(loadedTable[i][j], { i,j });
+			
 		}
 	}
 
@@ -72,7 +70,7 @@ vector < vector < string > > Table::update(string newFormula, pair < int, int > 
 
 			if (checkCycles({ i,j }))
 			{
-				thisTable[i][j].setError("Cicle here");
+				thisTable[i][j].setError(0);
 			}
 		}
 	}
@@ -105,15 +103,15 @@ bool Table::checkCycles(pair < int, int > position)
 	map < pair < int, int >, bool > used;
 	used.clear();
 
-	return dfs(position, position, used, 1);
+	return dfs(position, position, used);
 }
 
-bool Table::dfs(pair < int, int > currentPosition, pair < int, int > startPosition, map < pair < int, int >, bool >& used, bool debug)
+bool Table::dfs(pair < int, int > currentPosition, pair < int, int > startPosition, map < pair < int, int >, bool >& used)
 {
 	used[currentPosition] = 1;
-
+	
 	vector < pair < int, int > >* edges = thisTable[currentPosition.first][currentPosition.second].getReferenceFrom();
-
+	
 	if (edges->size() == 0)
 	{
 		return 0;
@@ -210,7 +208,6 @@ vector < vector < string > > Table::addColumn()
 
 	return result;
 }
-
 
 vector < vector < string > > Table::deleteRow()
 {
