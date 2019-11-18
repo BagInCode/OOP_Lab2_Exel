@@ -115,7 +115,7 @@ void Parser::createBackPolishNotation(vector < Wrapping >& splitedString, vector
 			{
 				priory = 2;
 			}
-			if (splitedString[i].getOperation == '^')
+			if (splitedString[i].getOperation() == '^')
 			{
 				priory = 3;
 			}
@@ -334,6 +334,13 @@ vector < Wrapping > Parser::workWtihFunction(string& formula, string functionNam
 {
 	vector < Wrapping > result;
 	int countArguments = 0;
+	
+	if (formula[i] != '(')
+	{
+		anyError = 1;
+
+		return result;
+	}
 
 	string functionPart = "";
 	int balance = 0;
@@ -369,6 +376,11 @@ vector < Wrapping > Parser::workWtihFunction(string& formula, string functionNam
 			addArgumentsToVector(arguments, result, functionName, balance);
 
 			functionPart = "";
+
+			if (balance < 0)
+			{
+				break;
+			}
 		}
 		else
 		{
