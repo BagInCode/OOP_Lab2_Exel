@@ -122,6 +122,17 @@ void Formula::calculate()
 			{
 				stack.push_back(max(x, y));
 			}; break;
+			case '^':
+			{
+				long long z = binPow(abs(y), x);
+
+				if (y < 0)
+				{
+					z = 1 / z;
+				}
+
+				stack.push_back(z);
+			}; break;
 			}
 		}
 		else
@@ -294,5 +305,24 @@ void Formula::nullCycleError()
 	{
 		isError = 0;
 		errorText = "";
+	}
+}
+
+long long Formula::binPow(long long step, long long val)
+{
+	if(step == 0)
+	{
+		return 1;
+	}
+
+	if (step & 1)
+	{
+		return val * binPow(step - 1, val);
+	}
+	else
+	{
+		long long x = binPow(step / 2, val);
+
+		return x * x;
 	}
 }

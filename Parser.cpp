@@ -2,8 +2,6 @@
 
 void Parser::splitString(string formula, vector < Wrapping >& splitedString, bool& anyError, set < pair < int, int > >& referenceTo)
 {
-	cerr << "spliting string: formula == \"" << formula << "\"\n";
-
 	string temp = "";
 
 	for (size_t i = 0; i < formula.size(); i++)
@@ -93,8 +91,6 @@ void Parser::splitString(string formula, vector < Wrapping >& splitedString, boo
 								anyError = 1;
 								return;
 							}
-
-							cerr << "argument == \"" << functionPart << "\"\n";
 
 							splitString(functionPart, functionArgumentResult, error, referenceTo);
 
@@ -211,26 +207,6 @@ void Parser::splitString(string formula, vector < Wrapping >& splitedString, boo
 
 void Parser::createBackPolishNotation(vector < Wrapping >& splitedString, vector < Wrapping >& backPolishNotation, bool& anyError)
 {
-	cerr << "splited string:\n";
-
-	for (int i = 0; i < splitedString.size(); i++)
-	{
-		if (splitedString[i].testNumber())
-		{
-			cerr << splitedString[i].getNumber();
-		}
-		if (splitedString[i].testOperation())
-		{
-			cerr << splitedString[i].getOperation();
-		}
-		if (splitedString[i].testSquare())
-		{
-			cerr << "(" << splitedString[i].getSquare().first << ", " << splitedString[i].getSquare().second << ")\n";
-		}
-	}
-
-	cerr << "\n";
-
 	vector < pair < int, Wrapping > > stack;
 
 	for (size_t i = 0; i < splitedString.size(); i++)
@@ -273,9 +249,13 @@ void Parser::createBackPolishNotation(vector < Wrapping >& splitedString, vector
 			{
 				priory = 2;
 			}
-			if (splitedString[i].getOperation() == '&' || splitedString[i].getOperation() == '|')
+			if (splitedString[i].getOperation() == '^')
 			{
 				priory = 3;
+			}
+			if (splitedString[i].getOperation() == '&' || splitedString[i].getOperation() == '|')
+			{
+				priory = 4;
 			}
 
 			if (stack.size() && stack.back().first >= priory)
@@ -342,7 +322,7 @@ bool Parser::testNumber(string testIt)
 
 bool Parser::testOperation(char testIt)
 {
-	return(testIt == '+' || testIt == '-' || testIt == '*' || testIt == '/' || testIt == '%' || testIt == '(' || testIt == ')');
+	return(testIt == '+' || testIt == '-' || testIt == '*' || testIt == '/' || testIt == '%' || testIt == '(' || testIt == ')' || testIt == '^');
 }
 
 bool Parser::testSquare(string testIt)

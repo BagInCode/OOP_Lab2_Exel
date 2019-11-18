@@ -57,4 +57,6 @@ public:
 	bool testError();
 
 	void nullCycleError();
+
+	long long binPow(long long step, long long val);
 };
